@@ -10,5 +10,5 @@ from twisted.web import server
 from customise_server import CustomiseServer
 
 if __name__ == '__main__':
-    server = CustomiseServer()
-    server.run('/tmp')
+    server = CustomiseServer('/tmp')
+    server.run()

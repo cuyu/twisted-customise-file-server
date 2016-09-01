@@ -4,26 +4,34 @@
     <meta charset="UTF-8">
     <title>{{header}}</title>
     <link rel="stylesheet" type="text/css" href="static/css/main.css">
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 </head>
 
 <body>
-<h1>{{header}}</h1>
+<h1 class="text-center text-muted">{{header}}</h1>
 
-<table>
-    <thead>
-    <tr>
-        <th>Filename</th>
-        <th>Size</th>
-        <th>Content type</th>
-        <th>Content encoding</th>
-        <th>Created time</th>
-    </tr>
-    </thead>
-    <tbody>
-    {{tableContent}}
-    </tbody>
-</table>
+<div class="col-sm-offset-1 col-sm-10">
+    <table class="table table-sm table-striped sortable">
+        <thead>
+        <tr>
+            <th>Filename</th>
+            <th>Size</th>
+            <th>Content type</th>
+            <th>Content encoding</th>
+            <th data-defaultsort="desc">Created time</th>
+        </tr>
+        </thead>
+        <tbody>
+        {{tableContent}}
+        </tbody>
+    </table>
+</div>
 
+<script src="http://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+        crossorigin="anonymous"></script>
+<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src="static/js/bootstrap-sortable.js"></script>
+<script src="static/js/moment.min.js"></script>
 </body>
 
 </html>

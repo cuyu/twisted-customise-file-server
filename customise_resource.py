@@ -22,29 +22,13 @@ else:
 
 
 class CustomiseFile(File):
-    def __init__(self, path, defaultType="text/html", ignoredExts=(), registry=None, allowExt=0,
-                 renderTemplate=None, staticResourcePath=None):
-        """
-        :param staticResourcePath: The resource folder path. Only needed for the web page nodes.
-                                    For resource nodes should be None.
-        :param renderTemplate: The html template file path. Should be a relative path to the staticResourcePath.
-                                    For resource nodes this can be None.
-        """
-        super(CustomiseFile, self).__init__(path, defaultType, ignoredExts, registry, allowExt)
-        if staticResourcePath is None:
-            assert renderTemplate is None
-        self.renderTemplate = renderTemplate
-        self.staticResourcePath = staticResourcePath
 
     def directoryListing(self):
-        if self.staticResourcePath:
-            return CustomiseDirectoryLister(self.path,
-                                            self.renderTemplate,
-                                            self.staticResourcePath,
-                                            self.listNames(),
-                                            self.contentTypes,
-                                            self.contentEncodings,
-                                            self.defaultType)
+        return CustomiseDirectoryLister(self.path,
+                                        self.listNames(),
+                                        self.contentTypes,
+                                        self.contentEncodings,
+                                        self.defaultType)
 
 
 class CustomiseDirectoryLister(resource.Resource):
@@ -75,16 +59,18 @@ class CustomiseDirectoryLister(resource.Resource):
     @type path: C{str}
     """
 
+    template = HtmlGenerator()
+
     linePattern = """<tr class="%(class)s">
     <td><a href="%(href)s">%(text)s</a></td>
-    <td>%(size)s</td>
+    <td data-value="%(size_int)s">%(size)s</td>
     <td>%(type)s</td>
     <td>%(encoding)s</td>
-    <td>%(ctime)s</td>
+    <td data-dateformat="YYYY-MM-DD hh:mm:ss">%(ctime)s</td>
 </tr>
 """
 
-    def __init__(self, pathname, renderTemplate, staticResourcePath, dirs=None,
+    def __init__(self, pathname, dirs=None,
                  contentTypes=File.contentTypes,
                  contentEncodings=File.contentEncodings,
                  defaultType='text/html'):
@@ -95,8 +81,6 @@ class CustomiseDirectoryLister(resource.Resource):
         # dirs allows usage of the File to specify what gets listed
         self.dirs = dirs
         self.path = pathname
-        self.renderTemplate = renderTemplate
-        self.template = HtmlGenerator(staticResourcePath)
 
     def _getFilesAndDirectories(self, directory):
         """
@@ -120,7 +104,7 @@ class CustomiseDirectoryLister(resource.Resource):
             childPath = filepath.FilePath(self.path).child(path)
 
             if childPath.isdir():
-                dirs.append({'text': escapedPath + "/", 'href': url + "/",
+                dirs.append({'text': escapedPath + "/", 'href': url + "/", 'size_int': -1,
                              'size': '', 'type': '[Directory]',
                              'encoding': '', 'ctime': ''})
             else:
@@ -135,6 +119,7 @@ class CustomiseDirectoryLister(resource.Resource):
                     'text': escapedPath, "href": url,
                     'type': '[%s]' % mimetype,
                     'encoding': (encoding and '[%s]' % encoding or ''),
+                    'size_int': size,
                     'size': formatFileSize(size),
                     'ctime': self.getCreateTime(childPath.path)})
         return dirs, files
@@ -174,7 +159,7 @@ class CustomiseDirectoryLister(resource.Resource):
         header = "Directory listing for %s" % (
             escape(unquote(nativeString(request.uri))),)
 
-        done = self.template.generatePage(self.renderTemplate, {"header": header, "tableContent": tableContent})
+        done = self.template.generatePage({"header": header, "tableContent": tableContent})
         done = done.encode("utf8")
 
         return done

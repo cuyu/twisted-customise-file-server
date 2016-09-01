@@ -5,28 +5,21 @@
 @contact: cuyu@splunk.com
 @since: 9/1/16
 """
-from jinja2 import Template, Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader
 
-
-# def urlFor(filepath):
+from settings import STATIC_RESOURCE_PATH, TEMPLATE_FILE
 
 
 class HtmlGenerator(object):
-    def __init__(self, static_folder_path):
-        self.env = Environment(loader=FileSystemLoader(static_folder_path))
+    def __init__(self):
+        self.env = Environment(loader=FileSystemLoader(STATIC_RESOURCE_PATH))
 
-    def generatePage(self, html_file_path, variables):
+    def generatePage(self, variables):
         """
         Generate the real html contents according the given html file and give the variables.
         :param html_file_path: The relative file path according to the static_folder_path.
         :param variables: A dict contains variables corresponding to the given html file.
         :return: A unicode string of rendered html content.
         """
-        template = self.env.get_template(html_file_path)
+        template = self.env.get_template(TEMPLATE_FILE)
         return template.render(**variables)
-
-
-if __name__ == '__main__':
-    t = Template('Hello {{name}}')
-    t.render(name='John')
-    pass
