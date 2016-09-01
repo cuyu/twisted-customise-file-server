@@ -17,16 +17,13 @@ from settings import STATIC_RESOURCE_PATH
 class CustomiseServer(object):
     def __init__(self, static_file_path, port=8080):
         """
-        :param static_resource_path: The dir that you put the css and js files. Should be full path.
+        :param static_file_path: The dir you want to display all the files in it on the web page.
+        :param port: Web server port.
         """
         self.static_file_path = static_file_path
         self.port = port
 
     def run(self):
-        """
-        :param static_file_path: The dir you want to display all the files in it on the web page.
-        :param port: Web server port.
-        """
         resource = CustomiseFile(self.static_file_path)
         resource.putChild(STATIC_RESOURCE_PATH.split(os.sep)[-1], CustomiseFile(STATIC_RESOURCE_PATH))
         site = server.Site(resource)

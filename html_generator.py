@@ -17,7 +17,6 @@ class HtmlGenerator(object):
     def generatePage(self, variables):
         """
         Generate the real html contents according the given html file and give the variables.
-        :param html_file_path: The relative file path according to the static_folder_path.
         :param variables: A dict contains variables corresponding to the given html file.
         :return: A unicode string of rendered html content.
         """
