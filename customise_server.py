@@ -23,12 +23,13 @@ class CustomiseServer(object):
         """
         self.static_resource_path = static_resource_path
 
-    def run(self, static_file_path, port=8080):
+    def run(self, static_file_path, template_file='index.html', port=8080):
         """
         :param static_file_path: The dir you want to display all the files in it on the web page.
         :param port: Web server port.
         """
-        resource = CustomiseFile(static_file_path, staticResourcePath=self.static_resource_path)
+        resource = CustomiseFile(static_file_path, renderTemplate=template_file,
+                                 staticResourcePath=self.static_resource_path)
         resource.putChild(self.static_resource_path.split(os.sep)[-1], CustomiseFile(self.static_resource_path))
         site = server.Site(resource)
         reactor.listenTCP(port, site)

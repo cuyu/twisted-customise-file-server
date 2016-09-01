@@ -23,13 +23,23 @@ else:
 
 class CustomiseFile(File):
     def __init__(self, path, defaultType="text/html", ignoredExts=(), registry=None, allowExt=0,
-                 staticResourcePath=None):
+                 renderTemplate=None, staticResourcePath=None):
+        """
+        :param staticResourcePath: The resource folder path. Only needed for the web page nodes.
+                                    For resource nodes should be None.
+        :param renderTemplate: The html template file path. Should be a relative path to the staticResourcePath.
+                                    For resource nodes this can be None.
+        """
         super(CustomiseFile, self).__init__(path, defaultType, ignoredExts, registry, allowExt)
+        if staticResourcePath is None:
+            assert renderTemplate is None
+        self.renderTemplate = renderTemplate
         self.staticResourcePath = staticResourcePath
 
     def directoryListing(self):
         if self.staticResourcePath:
             return CustomiseDirectoryLister(self.path,
+                                            self.renderTemplate,
                                             self.staticResourcePath,
                                             self.listNames(),
                                             self.contentTypes,
@@ -74,7 +84,7 @@ class CustomiseDirectoryLister(resource.Resource):
 </tr>
 """
 
-    def __init__(self, pathname, staticResourcePath, dirs=None,
+    def __init__(self, pathname, renderTemplate, staticResourcePath, dirs=None,
                  contentTypes=File.contentTypes,
                  contentEncodings=File.contentEncodings,
                  defaultType='text/html'):
@@ -85,6 +95,7 @@ class CustomiseDirectoryLister(resource.Resource):
         # dirs allows usage of the File to specify what gets listed
         self.dirs = dirs
         self.path = pathname
+        self.renderTemplate = renderTemplate
         self.template = HtmlGenerator(staticResourcePath)
 
     def _getFilesAndDirectories(self, directory):
@@ -163,8 +174,7 @@ class CustomiseDirectoryLister(resource.Resource):
         header = "Directory listing for %s" % (
             escape(unquote(nativeString(request.uri))),)
 
-        # TODO: remove hardcode index.html
-        done = self.template.generatePage('index.html', {"header": header, "tableContent": tableContent})
+        done = self.template.generatePage(self.renderTemplate, {"header": header, "tableContent": tableContent})
         done = done.encode("utf8")
 
         return done
