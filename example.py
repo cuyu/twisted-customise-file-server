@@ -7,12 +7,8 @@
 """
 
 from twisted.web import server
-from twisted.internet import reactor
-
-from customise_resource import CustomiseFile
+from customise_server import CustomiseServer
 
 if __name__ == '__main__':
-    resource = CustomiseFile('/tmp/')
-    site = server.Site(resource)
-    reactor.listenTCP(8080, site)
-    reactor.run()
+    server = CustomiseServer()
+    server.run('/tmp')

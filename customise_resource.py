@@ -13,6 +13,8 @@ from twisted.web import resource
 from twisted.web.static import File, getTypeAndEncoding, formatFileSize
 from twisted.python.compat import escape, _PY3, nativeString
 
+from html_generator import HtmlGenerator
+
 if _PY3:
     from urllib.parse import quote, unquote
 else:
@@ -20,12 +22,19 @@ else:
 
 
 class CustomiseFile(File):
+    def __init__(self, path, defaultType="text/html", ignoredExts=(), registry=None, allowExt=0,
+                 staticResourcePath=None):
+        super(CustomiseFile, self).__init__(path, defaultType, ignoredExts, registry, allowExt)
+        self.staticResourcePath = staticResourcePath
+
     def directoryListing(self):
-        return CustomiseDirectoryLister(self.path,
-                                        self.listNames(),
-                                        self.contentTypes,
-                                        self.contentEncodings,
-                                        self.defaultType)
+        if self.staticResourcePath:
+            return CustomiseDirectoryLister(self.path,
+                                            self.staticResourcePath,
+                                            self.listNames(),
+                                            self.contentTypes,
+                                            self.contentEncodings,
+                                            self.defaultType)
 
 
 class CustomiseDirectoryLister(resource.Resource):
@@ -56,50 +65,6 @@ class CustomiseDirectoryLister(resource.Resource):
     @type path: C{str}
     """
 
-    template = """<html>
-<head>
-<title>%(header)s</title>
-<style>
-.even-dir { background-color: #efe0ef }
-.even { background-color: #eee }
-.odd-dir {background-color: #f0d0ef }
-.odd { background-color: #dedede }
-.icon { text-align: center }
-.listing {
-    margin-left: auto;
-    margin-right: auto;
-    width: 50%%;
-    padding: 0.1em;
-    }
-
-body { border: 0; padding: 0; margin: 0; background-color: #efefef; }
-h1 {padding: 0.1em; background-color: #777; color: white; border-bottom: thin white dashed;}
-
-</style>
-</head>
-
-<body>
-<h1>%(header)s</h1>
-
-<table>
-    <thead>
-        <tr>
-            <th>Filename</th>
-            <th>Size</th>
-            <th>Content type</th>
-            <th>Content encoding</th>
-            <th>Created time</th>
-        </tr>
-    </thead>
-    <tbody>
-%(tableContent)s
-    </tbody>
-</table>
-
-</body>
-</html>
-"""
-
     linePattern = """<tr class="%(class)s">
     <td><a href="%(href)s">%(text)s</a></td>
     <td>%(size)s</td>
@@ -109,7 +74,7 @@ h1 {padding: 0.1em; background-color: #777; color: white; border-bottom: thin wh
 </tr>
 """
 
-    def __init__(self, pathname, dirs=None,
+    def __init__(self, pathname, staticResourcePath, dirs=None,
                  contentTypes=File.contentTypes,
                  contentEncodings=File.contentEncodings,
                  defaultType='text/html'):
@@ -120,6 +85,7 @@ h1 {padding: 0.1em; background-color: #777; color: white; border-bottom: thin wh
         # dirs allows usage of the File to specify what gets listed
         self.dirs = dirs
         self.path = pathname
+        self.template = HtmlGenerator(staticResourcePath)
 
     def _getFilesAndDirectories(self, directory):
         """
@@ -197,9 +163,9 @@ h1 {padding: 0.1em; background-color: #777; color: white; border-bottom: thin wh
         header = "Directory listing for %s" % (
             escape(unquote(nativeString(request.uri))),)
 
-        done = self.template % {"header": header, "tableContent": tableContent}
-        if _PY3:
-            done = done.encode("utf8")
+        # TODO: remove hardcode index.html
+        done = self.template.generatePage('index.html', {"header": header, "tableContent": tableContent})
+        done = done.encode("utf8")
 
         return done
 
