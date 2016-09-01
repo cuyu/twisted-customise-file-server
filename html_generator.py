@@ -5,9 +5,17 @@
 @contact: cuyu@splunk.com
 @since: 9/1/16
 """
+import os
+
 from jinja2 import Environment, FileSystemLoader
 
 from settings import STATIC_RESOURCE_PATH, TEMPLATE_FILE
+
+_BASE_PATH = STATIC_RESOURCE_PATH.split(os.sep)[-1]
+
+
+def url_for(file_path):
+    return '/' + _BASE_PATH + '/' + file_path
 
 
 class HtmlGenerator(object):
@@ -21,4 +29,4 @@ class HtmlGenerator(object):
         :return: A unicode string of rendered html content.
         """
         template = self.env.get_template(TEMPLATE_FILE)
-        return template.render(**variables)
+        return template.render(url_for=url_for, **variables)
