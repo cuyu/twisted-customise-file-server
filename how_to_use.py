@@ -6,8 +6,7 @@
 @since: 8/31/16
 """
 
-from twisted.web import server
-from customise_server import CustomiseServer
+from costomise_file_server.customise_server import CustomiseServer
 
 if __name__ == '__main__':
     server = CustomiseServer('/tmp')
